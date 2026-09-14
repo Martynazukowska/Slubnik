@@ -1,3 +1,4 @@
+import AuthLayout from "../layouts/AuthLayout";
 import type { FormEvent } from "react";
 import { useState } from "react";
 
@@ -8,13 +9,11 @@ import {
   Divider,
   IconButton,
   InputAdornment,
-  Paper,
   TextField,
   Typography,
 } from "@mui/material";
 
 import {
-  FavoriteBorder,
   Visibility,
   VisibilityOff,
 } from "@mui/icons-material";
@@ -43,6 +42,7 @@ export default function LoginPage() {
     event: FormEvent<HTMLFormElement>,
   ) => {
     event.preventDefault();
+    if (loading) return;
 
     setLoading(true);
     setError(null);
@@ -67,75 +67,7 @@ export default function LoginPage() {
 
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        bgcolor: "#faf8f7",
-        px: 2,
-      }}
-    >
-      <Paper
-        elevation={0}
-        sx={{
-          width: "100%",
-          maxWidth: 430,
-          p: {
-            xs: 3,
-            sm: 5,
-          },
-          borderRadius: 4,
-          border: "1px solid",
-          borderColor: "divider",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            mb: 2,
-          }}
-        >
-          <Box
-            sx={{
-              width: 52,
-              height: 52,
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              bgcolor: "primary.main",
-              color: "primary.contrastText",
-            }}
-          >
-            <FavoriteBorder />
-          </Box>
-        </Box>
-
-        <Typography
-          variant="h4"
-          component="h1"
-          gutterBottom
-          sx={{
-            textAlign: "center",
-            fontWeight: 700,
-          }}
-        >
-          Witaj ponownie
-        </Typography>
-
-        <Typography
-          color="text.secondary"
-          sx={{
-            textAlign: "center",
-            mb: 4,
-          }}
-        >
-          Zaloguj się, aby kontynuować planowanie ślubu.
-        </Typography>
-
+    <AuthLayout title="Witaj ponownie" description="Zaloguj się, aby kontynuować planowanie ślubu.">
         {error && (
           <Alert
             severity="error"
@@ -265,7 +197,6 @@ export default function LoginPage() {
         >
           Utwórz konto
         </Button>
-      </Paper>
-    </Box>
+    </AuthLayout>
   );
 }

@@ -1,3 +1,4 @@
+import AuthLayout from "../layouts/AuthLayout";
 import type { FormEvent } from "react"
 import { useState } from "react"
 
@@ -7,13 +8,10 @@ import {
   Button,
   IconButton,
   InputAdornment,
-  Paper,
   TextField,
-  Typography,
 } from "@mui/material";
 
 import {
-  FavoriteBorder,
   Visibility,
   VisibilityOff,
 } from "@mui/icons-material";
@@ -46,6 +44,7 @@ export default function RegisterPage() {
     event: FormEvent<HTMLFormElement>,
   ) => {
     event.preventDefault();
+    if (loading) return;
 
     setError(null);
 
@@ -80,62 +79,7 @@ export default function RegisterPage() {
 
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        bgcolor: "#faf8f7",
-        px: 2,
-      }}
-    >
-      <Paper
-        elevation={0}
-        sx={{
-          width: "100%",
-          maxWidth: 450,
-          p: {
-            xs: 3,
-            sm: 5,
-          },
-          borderRadius: 4,
-          border: "1px solid",
-          borderColor: "divider",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            mb: 2,
-          }}
-        >
-          <FavoriteBorder />
-        </Box>
-
-        <Typography
-          variant="h4"
-          component="h1"
-          sx={{
-            textAlign: "center",
-            fontWeight: 700,
-            mb: 1,
-          }}
-        >
-          Utwórz konto
-        </Typography>
-
-        <Typography
-          color="text.secondary"
-          sx={{
-            textAlign: "center",
-            mb: 4,
-          }}
-        >
-          Zacznij planować swoje wesele.
-        </Typography>
-
+    <AuthLayout title="Utwórz konto" description="Zacznij planować swoje wesele.">
         {error && (
           <Alert
             severity="error"
@@ -151,6 +95,8 @@ export default function RegisterPage() {
         >
           <TextField
             label="Nazwa użytkownika"
+            autoComplete="username"
+            disabled={loading}
             fullWidth
             required
             value={username}
@@ -162,6 +108,8 @@ export default function RegisterPage() {
 
           <TextField
             label="E-mail"
+            autoComplete="email"
+            disabled={loading}
             type="email"
             fullWidth
             required
@@ -173,7 +121,7 @@ export default function RegisterPage() {
           />
 
           <TextField
-            label="Hasło"
+            label="Hasło" autoComplete="new-password" disabled={loading}
             type={showPassword ? "text" : "password"}
             fullWidth
             required
@@ -186,6 +134,7 @@ export default function RegisterPage() {
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
+                      aria-label={showPassword ? "Ukryj hasło" : "Pokaż hasło"}
                       onClick={() =>
                         setShowPassword(
                           (value) => !value,
@@ -206,7 +155,7 @@ export default function RegisterPage() {
           />
 
           <TextField
-            label="Powtórz hasło"
+            label="Powtórz hasło" autoComplete="new-password" disabled={loading}
             type="password"
             fullWidth
             required
@@ -253,7 +202,6 @@ export default function RegisterPage() {
             Mam już konto
           </Button>
         </Box>
-      </Paper>
-    </Box>
+    </AuthLayout>
   );
 }
