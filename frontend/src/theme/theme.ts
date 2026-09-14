@@ -21,7 +21,7 @@ export const theme = createTheme({
   shape: { borderRadius: 12 },
   typography: {
     fontFamily: '"Segoe UI", Roboto, Arial, sans-serif',
-    h4: { fontWeight: 700, fontSize: "2rem" },
+    h4: { fontFamily: '"Georgia", "Times New Roman", serif', fontWeight: 500, fontSize: "clamp(1.75rem, 4vw, 2rem)" },
     button: { textTransform: "none", fontWeight: 600 },
   },
   components: {

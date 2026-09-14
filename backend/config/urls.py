@@ -25,4 +25,9 @@ urlpatterns = [
         "api/auth/",
         include("accounts.urls"),
     ),
+
+    path(
+        "api/weddings/",
+        include("weddings.urls"),
+    ),
 ]
