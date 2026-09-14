@@ -11,23 +11,23 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-
-import environ
+import os
+from dotenv import load_dotenv 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = BASE_DIR.parent
 
-env = environ.Env( DJANGO_DEBUG=(bool, False), ) 
-environ.Env.read_env(BASE_DIR / ".env")
+load_dotenv(PROJECT_ROOT / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("DJANGO_SECRET_KEY")
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool("DJANGO_DEBUG")
+DEBUG = os.getenv("DJANGO_DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = []
 
@@ -83,11 +83,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": env("DB_NAME"), 
-        "USER": env("DB_USER"), 
-        "PASSWORD": env("DB_PASSWORD"), 
-        "HOST": env("DB_HOST"), 
-        "PORT": env.int("DB_PORT", default=5432),
+        "NAME": os.getenv("DB_NAME"), 
+        "USER": os.getenv("DB_USER"), 
+        "PASSWORD": os.getenv("DB_PASSWORD"), 
+        "HOST": os.getenv("DB_HOST"), 
+        "PORT": os.getenv("DB_PORT", default=5432),
     }
 }
 
@@ -132,3 +132,8 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
