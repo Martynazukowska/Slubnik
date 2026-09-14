@@ -1,9 +1,11 @@
 export class ApiError extends Error {
   readonly status: number;
-  constructor(message: string, status: number) {
+  readonly fieldErrors: Record<string, string[]>;
+  constructor(message: string, status: number, fieldErrors: Record<string, string[]> = {}) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.fieldErrors = fieldErrors;
   }
 }
 
@@ -28,7 +30,19 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
     throw new ApiError(
       typeof data?.detail === "string" ? data.detail : "Błąd komunikacji z serwerem.",
       response.status,
+      parseFieldErrors(data?.errors),
     );
   }
   return data as T;
+}
+
+function parseFieldErrors(value: unknown): Record<string, string[]> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(Object.entries(value).map(([field, errors]) => [
+    field, Array.isArray(errors) ? errors.flatMap((error: unknown) => {
+      if (typeof error === "string") return [error];
+      if (error && typeof error === "object" && "message" in error && typeof error.message === "string") return [error.message];
+      return [];
+    }) : [],
+  ]));
 }

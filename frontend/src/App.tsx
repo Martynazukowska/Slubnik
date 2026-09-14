@@ -11,7 +11,9 @@ import {
 import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import CreateWeddingPage from "./pages/CreateWeddingPage";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
+import WeddingSettingsPage from "./pages/WeddingSettingsPage";
 
 
 function App() {
@@ -21,7 +23,8 @@ function App() {
         component="header"
         sx={{
           display: "grid",
-          gridTemplateColumns: "1fr auto 1fr",
+          gridTemplateColumns: { xs: "minmax(0, 1fr) auto", sm: "1fr auto 1fr" },
+          gap: 2,
           alignItems: "center",
           minHeight: 76,
           px: {
@@ -33,7 +36,7 @@ function App() {
           bgcolor: "background.paper",
         }}
       >
-        <Box />
+        <Box sx={{ display: { xs: "none", sm: "block" } }} />
 
         <Box
           sx={{
@@ -61,7 +64,7 @@ function App() {
               variant="h4"
               component="div"
               sx={{
-                fontFamily: '"Georgia", "Times New Roman", serif',
+                fontSize: { xs: "1.5rem", sm: "2rem" },
                 fontWeight: 500,
                 letterSpacing: "0.05em",
                 color: "primary.main",
@@ -73,6 +76,7 @@ function App() {
 
             <Typography
               sx={{
+                display: { xs: "none", sm: "block" },
                 mt: 0.6,
                 fontSize: "0.6rem",
                 letterSpacing: "0.2em",
@@ -110,6 +114,16 @@ function App() {
         <Route
           path="/dashboard"
           element={<DashboardPage />}
+        />
+
+        <Route
+          path="/wedding/create"
+          element={<CreateWeddingPage />}
+        />
+
+        <Route
+          path="/wedding/settings"
+          element={<WeddingSettingsPage />}
         />
 
         <Route

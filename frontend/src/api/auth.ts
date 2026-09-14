@@ -23,7 +23,7 @@ export function login(credentials: LoginCredentials): Promise<User> {
 export async function register(credentials: RegisterCredentials): Promise<void> {
   await apiRequest("/auth/register/", { method: "POST", body: JSON.stringify(credentials) });
 }
-export function getCurrentUser(): Promise<User> { return apiRequest("/auth/me/"); }
+export function getCurrentUser(signal?: AbortSignal): Promise<User> { return apiRequest("/auth/me/", { signal }); }
 export async function logout(): Promise<void> {
   await apiRequest("/auth/logout/", { method: "POST" });
 }
