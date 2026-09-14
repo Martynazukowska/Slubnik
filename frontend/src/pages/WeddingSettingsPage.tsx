@@ -24,25 +24,28 @@ import {
   getCurrentWedding,
   updateWedding,
 } from "../api/weddings";
-import { normalizeBudget, minimumWeddingDate, validateWedding, } from "../features/weddings/validation";
-interface WeddingForm {
-  wedding_date: string;
-  city: string;
-  guest_count: string;
-  planned_budget: string;
-}
+import {
+  minimumWeddingDate,
+  normalizeBudget,
+  validateWedding,
+  type WeddingFields,
+} from "../features/weddings/validation";
 
-const emptyForm: WeddingForm = {
+const emptyForm: WeddingFields = {
   wedding_date: "",
   city: "",
   guest_count: "",
   planned_budget: "",
 };
 
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
 export default function WeddingSettingsPage() {
   const navigate = useNavigate();
 
-  const [form, setForm] = useState<WeddingForm>(emptyForm);
+  const [form, setForm] = useState<WeddingFields>(emptyForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -68,9 +71,7 @@ export default function WeddingSettingsPage() {
         });
       } catch (error) {
         setError(
-          error instanceof Error
-            ? error.message
-            : "Nie udało się pobrać danych wesela.",
+          getErrorMessage(error, "Nie udało się pobrać danych wesela."),
         );
       } finally {
         setLoading(false);
@@ -80,31 +81,24 @@ export default function WeddingSettingsPage() {
     loadWedding();
   }, [navigate]);
 
-  function change(field: keyof WeddingForm, value: string) {
-    setForm((current) => ({
-      ...current,
-      [field]: value,
-    }));
-
+  function change(field: keyof WeddingFields, value: string) {
+    setForm((current) => ({ ...current, [field]: value }));
     setError("");
     setSuccess("");
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSaving(true);
+
+    const validationErrors = validateWedding(form);
+    const firstError = Object.values(validationErrors)[0];
+
     setError("");
     setSuccess("");
 
-    const validationErrors = validateWedding(form);
-    if (Object.keys(validationErrors).length > 0) {
-        const firstError = Object.values(validationErrors)[0];
-
-        setError(
-        firstError ?? "Sprawdź poprawność danych.",
-        );
-
-        return;
+    if (firstError) {
+      setError(firstError);
+      return;
     }
 
     setSaving(true);
@@ -120,9 +114,7 @@ export default function WeddingSettingsPage() {
       setSuccess("Dane wesela zostały zapisane.");
     } catch (error) {
       setError(
-        error instanceof Error
-          ? error.message
-          : "Nie udało się zapisać zmian.",
+        getErrorMessage(error, "Nie udało się zapisać zmian."),
       );
     } finally {
       setSaving(false);
@@ -138,9 +130,7 @@ export default function WeddingSettingsPage() {
       navigate("/dashboard");
     } catch (error) {
       setError(
-        error instanceof Error
-          ? error.message
-          : "Nie udało się usunąć wesela.",
+        getErrorMessage(error, "Nie udało się usunąć wesela."),
       );
       setDeleteDialogOpen(false);
     } finally {
@@ -162,9 +152,15 @@ export default function WeddingSettingsPage() {
     <PageLayout compact>
       <Stack spacing={4}>
         <Box>
-          <Typography variant="h4" component="h1" sx={{fontWeight: 700}} gutterBottom>
+          <Typography
+            variant="h4"
+            component="h1"
+            gutterBottom
+            sx={{ fontWeight: 700 }}
+          >
             Edytuj swoje wesele
           </Typography>
+
           <Typography color="text.secondary">
             Tutaj możesz zmienić podstawowe informacje dotyczące wesela.
           </Typography>
@@ -173,7 +169,10 @@ export default function WeddingSettingsPage() {
         {error && <Alert severity="error">{error}</Alert>}
         {success && <Alert severity="success">{success}</Alert>}
 
-        <Paper variant="outlined" sx={{ p: { xs: 3, sm: 4 }, borderRadius: 3 }}>
+        <Paper
+          variant="outlined"
+          sx={{ p: { xs: 3, sm: 4 }, borderRadius: 3 }}
+        >
           <Box component="form" noValidate onSubmit={handleSubmit}>
             <Stack spacing={2.5}>
               <TextField
@@ -183,10 +182,9 @@ export default function WeddingSettingsPage() {
                 onChange={(e) => change("wedding_date", e.target.value)}
                 required
                 fullWidth
-                slotProps={{ 
-                    inputLabel: { shrink: true },
-                    htmlInput: {min: minimumWeddingDate()
-                },
+                slotProps={{
+                  inputLabel: { shrink: true },
+                  htmlInput: { min: minimumWeddingDate() },
                 }}
               />
 
@@ -251,7 +249,10 @@ export default function WeddingSettingsPage() {
             borderColor: "error.main",
           }}
         >
-          <Typography variant="h6" sx={{color: "error.main", fontWeight: 700,}}>
+          <Typography
+            variant="h6"
+            sx={{ color: "error.main", fontWeight: 700 }}
+          >
             Usuń wesele
           </Typography>
 

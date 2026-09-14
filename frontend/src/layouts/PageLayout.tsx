@@ -1,6 +1,4 @@
-import type { ReactNode } from "react";
-import { useState } from "react";
-
+import { useState, type ReactNode } from "react";
 import {
   Box,
   Container,
@@ -8,7 +6,6 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 
 import Sidebar, {
@@ -16,39 +13,24 @@ import Sidebar, {
   SIDEBAR_EXPANDED_WIDTH,
 } from "./AppSidebar";
 
-
 interface PageLayoutProps {
   children: ReactNode;
   compact?: boolean;
 }
-
 
 export default function PageLayout({
   children,
   compact = false,
 }: PageLayoutProps) {
   const theme = useTheme();
+  const mobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const mobile = useMediaQuery(
-    theme.breakpoints.down("md"),
-  );
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  const [
-    sidebarExpanded,
-    setSidebarExpanded,
-  ] = useState(true);
-
-  const [
-    mobileOpen,
-    setMobileOpen,
-  ] = useState(false);
-
-
-  const sidebarWidth =
-    sidebarExpanded
-      ? SIDEBAR_EXPANDED_WIDTH
-      : SIDEBAR_COLLAPSED_WIDTH;
-
+  const sidebarWidth = sidebarExpanded
+    ? SIDEBAR_EXPANDED_WIDTH
+    : SIDEBAR_COLLAPSED_WIDTH;
 
   return (
     <Box
@@ -61,54 +43,25 @@ export default function PageLayout({
       <Sidebar
         mobile={mobile}
         mobileOpen={mobileOpen}
-        onMobileClose={() =>
-          setMobileOpen(false)
-        }
+        onMobileClose={() => setMobileOpen(false)}
         expanded={sidebarExpanded}
-        onToggle={() =>
-          setSidebarExpanded(
-            (current) => !current,
-          )
-        }
+        onToggle={() => setSidebarExpanded((current) => !current)}
       />
-
 
       <Box
         sx={{
           flexGrow: 1,
           minWidth: 0,
-
-          // jawnie pokazujemy,
-          // że szerokość zależy od sidebara
-          width: mobile
-            ? "100%"
-            : `calc(100% - ${sidebarWidth}px)`,
-
-          transition:
-            theme.transitions.create(
-              "width",
-              {
-                duration:
-                  theme.transitions
-                    .duration.shorter,
-              },
-            ),
+          width: mobile ? "100%" : `calc(100% - ${sidebarWidth}px)`,
+          transition: theme.transitions.create("width", {
+            duration: theme.transitions.duration.shorter,
+          }),
         }}
       >
-        {/* Tylko mobile:
-            przycisk otwierający Drawer */}
-
         {mobile && (
-          <Box
-            sx={{
-              px: 2,
-              pt: 2,
-            }}
-          >
+          <Box sx={{ px: 2, pt: 2 }}>
             <IconButton
-              onClick={() =>
-                setMobileOpen(true)
-              }
+              onClick={() => setMobileOpen(true)}
               aria-label="Otwórz menu"
             >
               <MenuRoundedIcon />
@@ -116,20 +69,10 @@ export default function PageLayout({
           </Box>
         )}
 
-
         <Container
           component="main"
-          maxWidth={
-            compact
-              ? "md"
-              : "lg"
-          }
-          sx={{
-            py: {
-              xs: 3,
-              sm: 5,
-            },
-          }}
+          maxWidth={compact ? "md" : "lg"}
+          sx={{ py: { xs: 3, sm: 5 } }}
         >
           {children}
         </Container>

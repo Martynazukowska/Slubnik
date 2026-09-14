@@ -21,14 +21,7 @@ export interface Wedding {
   budget_summary: BudgetSummary;
 }
 
-export interface CreateWeddingData {
-  wedding_date: string;
-  city: string;
-  guest_count: number;
-  planned_budget: string;
-}
-
-export interface UpdateWeddingData {
+export interface WeddingData {
   wedding_date: string;
   city: string;
   guest_count: number;
@@ -39,194 +32,100 @@ interface ApiError {
   detail?: string;
 }
 
+const endpoints = {
+  create: "/api/weddings/create/",
+  current: "/api/weddings/current/",
+  edit: "/api/weddings/current/edit/",
+  delete: "/api/weddings/current/delete/",
+};
 
 function getCookie(name: string): string | null {
-  const cookies = document.cookie.split(";");
+  const cookie = document.cookie
+    .split(";")
+    .find((item) => item.trim().startsWith(`${name}=`));
 
-  for (const cookie of cookies) {
-    const [key, ...valueParts] =
-      cookie.trim().split("=");
-
-    if (key === name) {
-      return decodeURIComponent(
-        valueParts.join("="),
-      );
-    }
-  }
-
-  return null;
+  return cookie
+    ? decodeURIComponent(cookie.trim().substring(name.length + 1))
+    : null;
 }
 
-
-async function getErrorMessage(
-  response: Response,
-): Promise<string> {
+async function getErrorMessage(response: Response): Promise<string> {
   try {
-    const data =
-      (await response.json()) as ApiError;
-
-    return (
-      data.detail ??
-      "Wystąpił nieznany błąd."
-    );
+    const data = (await response.json()) as ApiError;
+    return data.detail ?? "Wystąpił nieznany błąd.";
   } catch {
-    return (
-      "Wystąpił błąd komunikacji z serwerem."
-    );
+    return "Wystąpił błąd komunikacji z serwerem.";
   }
 }
 
-
-async function initializeCsrf(): Promise<void> {
-  const response = await fetch(
-    "/api/auth/csrf/",
-    {
-      method: "GET",
-      credentials: "include",
-    },
-  );
+async function initializeCsrf(): Promise<string> {
+  const response = await fetch("/api/auth/csrf/", {
+    credentials: "include",
+  });
 
   if (!response.ok) {
-    throw new Error(
-      await getErrorMessage(response),
-    );
+    throw new Error(await getErrorMessage(response));
   }
+
+  const token = getCookie("csrftoken");
+
+  if (!token) {
+    throw new Error("Nie udało się pobrać tokenu CSRF.");
+  }
+
+  return token;
 }
 
+async function weddingRequest<T>(
+  url: string,
+  method: "POST" | "PATCH" | "DELETE",
+  data?: WeddingData,
+): Promise<T> {
+  const csrfToken = await initializeCsrf();
 
-export async function createWedding(
-  data: CreateWeddingData,
-): Promise<Wedding> {
-  await initializeCsrf();
-
-  const csrfToken =
-    getCookie("csrftoken");
-
-  if (!csrfToken) {
-    throw new Error(
-      "Nie udało się pobrać tokenu CSRF.",
-    );
-  }
-
-  const response = await fetch(
-    "/api/weddings/create/",
-    {
-      method: "POST",
-
-      credentials: "include",
-
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": csrfToken,
-      },
-
-      body: JSON.stringify(data),
+  const response = await fetch(url, {
+    method,
+    credentials: "include",
+    headers: {
+      "X-CSRFToken": csrfToken,
+      ...(data && { "Content-Type": "application/json" }),
     },
-  );
+    body: data ? JSON.stringify(data) : undefined,
+  });
 
   if (!response.ok) {
-    throw new Error(
-      await getErrorMessage(response),
-    );
+    throw new Error(await getErrorMessage(response));
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  return (await response.json()) as T;
+}
+
+export function createWedding(data: WeddingData): Promise<Wedding> {
+  return weddingRequest<Wedding>(endpoints.create, "POST", data);
+}
+
+export async function getCurrentWedding(): Promise<Wedding | null> {
+  const response = await fetch(endpoints.current, {
+    credentials: "include",
+  });
+
+  if (response.status === 404) return null;
+
+  if (!response.ok) {
+    throw new Error(await getErrorMessage(response));
   }
 
   return (await response.json()) as Wedding;
 }
 
-
-export async function getCurrentWedding():
-Promise<Wedding | null> {
-  const response = await fetch(
-    "/api/weddings/current/",
-    {
-      method: "GET",
-      credentials: "include",
-    },
-  );
-
-  if (response.status === 404) {
-    return null;
-  }
-
-  if (!response.ok) {
-    throw new Error(
-      await getErrorMessage(response),
-    );
-  }
-
-  return (await response.json()) as Wedding;
+export function updateWedding(data: WeddingData): Promise<Wedding> {
+  return weddingRequest<Wedding>(endpoints.edit, "PATCH", data);
 }
 
-
-export async function updateWedding(
-  data: UpdateWeddingData,
-): Promise<Wedding> {
-  await initializeCsrf();
-
-  const csrfToken =
-    getCookie("csrftoken");
-
-  if (!csrfToken) {
-    throw new Error(
-      "Nie udało się pobrać tokenu CSRF.",
-    );
-  }
-
-  const response = await fetch(
-    "/api/weddings/current/edit/",
-    {
-      method: "PATCH",
-
-      credentials: "include",
-
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": csrfToken,
-      },
-
-      body: JSON.stringify(data),
-    },
-  );
-
-  if (!response.ok) {
-    throw new Error(
-      await getErrorMessage(response),
-    );
-  }
-
-  return (await response.json()) as Wedding;
-}
-
-
-export async function deleteWedding():
-Promise<void> {
-  await initializeCsrf();
-
-  const csrfToken =
-    getCookie("csrftoken");
-
-  if (!csrfToken) {
-    throw new Error(
-      "Nie udało się pobrać tokenu CSRF.",
-    );
-  }
-
-  const response = await fetch(
-    "/api/weddings/current/delete/",
-    {
-      method: "DELETE",
-
-      credentials: "include",
-
-      headers: {
-        "X-CSRFToken": csrfToken,
-      },
-    },
-  );
-
-  if (!response.ok) {
-    throw new Error(
-      await getErrorMessage(response),
-    );
-  }
+export function deleteWedding(): Promise<void> {
+  return weddingRequest<void>(endpoints.delete, "DELETE");
 }
